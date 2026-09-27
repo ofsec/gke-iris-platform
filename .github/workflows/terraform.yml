@@ -1,0 +1,133 @@
+
+name: terraform-dev
+
+
+
+on:
+
+  pull_request:                     # plan on every PR touching the infrastructure
+
+    paths:
+
+      - "envs/**"
+
+      - "modules/**"
+
+      - ".github/workflows/terraform.yml"
+
+  workflow_dispatch:                # the manual "Run workflow" button
+
+    inputs:
+
+      action:
+
+        description: "What to do with the dev environment"
+
+        type: choice
+
+        options: [apply, destroy]
+
+
+
+permissions:
+
+  contents: read
+
+  id-token: write                   # lets the job ask GitHub for an OIDC token
+
+
+
+concurrency:
+
+  group: terraform-dev              # never two runs on the same state at once
+
+  cancel-in-progress: false
+
+
+
+jobs:
+
+  terraform:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+
+      run:
+
+        working-directory: envs/dev
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+
+
+      - name: Authenticate to GCP (keyless)
+
+        uses: google-github-actions/auth@v2
+
+        with:
+
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+
+          service_account: ${{ vars.GCP_CI_SA }}
+
+
+
+      - uses: hashicorp/setup-terraform@v3
+
+        with:
+
+          terraform_version: 1.16.4   # same version as in Cloud Shell
+
+          terraform_wrapper: false
+
+
+
+      - name: Format check
+
+        run: terraform fmt -check -recursive ../..
+
+
+
+      - name: Init
+
+        run: terraform init -input=false
+
+
+
+      - name: Validate
+
+        run: terraform validate
+
+
+
+      - name: Plan
+
+        if: github.event_name == 'pull_request'
+
+        run: |
+
+          set -o pipefail
+
+          terraform plan -input=false -no-color | tee plan.txt
+
+          { echo '## Terraform plan (dev)'; echo '```'; cat plan.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+
+
+      - name: Apply
+
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
+
+        run: terraform apply -input=false -auto-approve
+
+
+
+      - name: Destroy
+
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy'
+
+        run: terraform destroy -input=false -auto-approve
+

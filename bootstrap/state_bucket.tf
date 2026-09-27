@@ -1,13 +1,13 @@
 
 resource "google_storage_bucket" "tfstate" {
 
-  name                        = "gcp-lab-idir-2026-tfstate"
+  name = "gcp-lab-idir-2026-tfstate"
 
-  location                    = "europe-west1"
+  location = "europe-west1"
 
-  uniform_bucket_level_access = true       # access only through IAM, no per-file permissions
+  uniform_bucket_level_access = true # access only through IAM, no per-file permissions
 
-  public_access_prevention    = "enforced" # can never be made public, even by mistake
+  public_access_prevention = "enforced" # can never be made public, even by mistake
 
 
 
