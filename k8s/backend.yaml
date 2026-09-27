@@ -32,6 +32,7 @@ spec:
       containers:
         - name: backend
           image: backend # replaced by kustomize with the full image and tag
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
