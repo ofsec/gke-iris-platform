@@ -1,18 +1,31 @@
 import os
+import time
 from contextlib import asynccontextmanager
 
 import google.auth
 import joblib
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from pydantic import BaseModel
+from starlette.responses import Response
 
 PROJECT = os.environ["PROJECT_ID"]
 REGION = os.environ.get("REGION", "europe-west1")
 MODEL_NAME = os.environ.get("MODEL_NAME", "iris-classifier")
 SPECIES = ["setosa", "versicolor", "virginica"]
 state = {}
+
+# Golden signals: traffic and errors (counter by status), latency (histogram).
+# "path" is the route template, never the raw URL, to keep label cardinality bounded.
+REQUESTS = Counter("http_requests_total", "HTTP requests", ["method", "path", "status"])
+LATENCY = Histogram(
+    "http_request_duration_seconds", "HTTP request latency", ["method", "path"],
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5),
+)
+# Business metric: what the model answers
+PREDICTIONS = Counter("iris_predictions_total", "Predictions returned, by species", ["species"])
 
 
 def find_latest_model():
@@ -49,6 +62,27 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 
 
+@app.middleware("http")
+async def record_metrics(request: Request, call_next):
+    start = time.perf_counter()
+    status = 500  # an unhandled exception still counts as an error
+    try:
+        response = await call_next(request)
+        status = response.status_code
+        return response
+    finally:
+        route = request.scope.get("route")
+        path = route.path if route else "unmatched"
+        if path != "/metrics":  # don't measure the scrapes themselves
+            REQUESTS.labels(request.method, path, str(status)).inc()
+            LATENCY.labels(request.method, path).observe(time.perf_counter() - start)
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 class PredictRequest(BaseModel):
     instances: list[list[float]]  # each: sepal length, sepal width, petal length, petal width (cm)
 
@@ -63,6 +97,8 @@ def predict(req: PredictRequest):
     if any(len(x) != 4 for x in req.instances):
         raise HTTPException(status_code=422, detail="Each instance needs exactly 4 measurements")
     classes = state["model"].predict(req.instances)
+    for c in classes:
+        PREDICTIONS.labels(SPECIES[int(c)]).inc()
     return {
         "model": state["model_name"],
         "predictions": [{"class": int(c), "species": SPECIES[int(c)]} for c in classes],
