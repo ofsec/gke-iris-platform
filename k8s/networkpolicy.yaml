@@ -1,0 +1,40 @@
+# 1. By default, no pod in this namespace accepts incoming traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: iris
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+# 2. The frontend accepts traffic on 8080 (from the load balancer)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-ingress
+  namespace: iris
+spec:
+  podSelector:
+    matchLabels: { app: iris-frontend }
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - { port: 8080, protocol: TCP }
+---
+# 3. The backend accepts traffic only from the frontend pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-from-frontend
+  namespace: iris
+spec:
+  podSelector:
+    matchLabels: { app: iris-backend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app: iris-frontend }
+      ports:
+        - { port: 8080, protocol: TCP }

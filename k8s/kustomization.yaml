@@ -2,17 +2,18 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- namespace.yaml
-- backend.yaml
-- frontend.yaml
-- gateway.yaml
+  - namespace.yaml
+  - backend.yaml
+  - frontend.yaml
+  - gateway.yaml
+  - networkpolicy.yaml
 
 # The only lines CI changes: which image tag runs.
 # ArgoCD sees the new commit and rolls it out.
 images:
-- name: backend
-  newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/backend
-  newTag: c090277673fc970291679681cbf4134c1fd0a53b
-- name: frontend
-  newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/frontend
-  newTag: c090277673fc970291679681cbf4134c1fd0a53b
+  - name: backend
+    newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/backend
+    newTag: c090277673fc970291679681cbf4134c1fd0a53b
+  - name: frontend
+    newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/frontend
+    newTag: c090277673fc970291679681cbf4134c1fd0a53b
