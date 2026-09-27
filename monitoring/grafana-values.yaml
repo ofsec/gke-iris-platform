@@ -28,3 +28,15 @@ datasources:
         url: http://prometheus-server.monitoring.svc.cluster.local
         access: proxy
         isDefault: true
+
+# Sidecar: watches ConfigMaps labelled grafana_dashboard=1 in this namespace and loads them live
+# (source: monitoring/dashboards/, the third source of the ArgoCD app).
+sidecar:
+  resources:
+    requests: { cpu: 10m, memory: 64Mi }
+    limits: { memory: 128Mi }
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    resource: configmap
