@@ -15,7 +15,8 @@ locals {
 
   ci_roles = [
 
-    "roles/compute.networkAdmin", # VPC, subnet, Cloud Router, Cloud NAT
+    "roles/compute.networkAdmin",  # VPC, subnet, Cloud Router, Cloud NAT
+    "roles/compute.securityAdmin", # firewall rules, and Cloud Armor policies later
 
     "roles/container.admin", # create, update, delete GKE clusters
 
