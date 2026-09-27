@@ -13,7 +13,7 @@ resources:
 images:
 - name: backend
   newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/backend
-  newTag: 4e0f93fd1dcf3b8af8eb2d3f4fdae308b0884466
+  newTag: 4cfd4f75ba86ccc7634452bb8a0ea5c86a7207d4
 - name: frontend
   newName: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images/frontend
-  newTag: 4e0f93fd1dcf3b8af8eb2d3f4fdae308b0884466
+  newTag: 4cfd4f75ba86ccc7634452bb8a0ea5c86a7207d4
