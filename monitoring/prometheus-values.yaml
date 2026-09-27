@@ -1,0 +1,21 @@
+# Prometheus server only (chart prometheus-community/prometheus), deployed by ArgoCD app "prometheus".
+# Autopilot bills every pod: keep only the server.
+alertmanager:
+  enabled: false # alerting comes later (or via Grafana)
+kube-state-metrics:
+  enabled: false
+prometheus-node-exporter:
+  enabled: false # DaemonSet with hostPath/hostNetwork: forbidden on Autopilot
+prometheus-pushgateway:
+  enabled: false
+
+server:
+  retention: "2d" # lab: short history, small disk
+  persistentVolume:
+    size: 8Gi
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }
+
+# The chart's default scrape jobs include "kubernetes-pods": any pod annotated
+# prometheus.io/scrape: "true" (+ prometheus.io/port, prometheus.io/path) gets scraped.
