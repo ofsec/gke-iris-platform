@@ -1,0 +1,60 @@
+name: build-and-release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"                     # only when application code changes
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write                     # to commit the new image tags
+  id-token: write                     # for keyless auth to GCP
+
+concurrency:
+  group: build-and-release
+  cancel-in-progress: false
+
+env:
+  REGISTRY: europe-west1-docker.pkg.dev/gcp-lab-idir-2026/iris-dev-images
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (keyless)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_CI_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Let Docker push to Artifact Registry
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+      - name: Build and push images, tagged with the commit ID
+        run: |
+          for app in backend frontend; do
+            docker build -t "$REGISTRY/$app:${GITHUB_SHA}" "apps/$app"
+            docker push "$REGISTRY/$app:${GITHUB_SHA}"
+          done
+
+      - name: Point the manifests at the new images
+        working-directory: k8s
+        run: |
+          kustomize edit set image "backend=$REGISTRY/backend:${GITHUB_SHA}"
+          kustomize edit set image "frontend=$REGISTRY/frontend:${GITHUB_SHA}"
+
+      # A commit pushed with the workflow's own token never triggers another
+      # workflow run, so this cannot loop.
+      - name: Commit the new tags (ArgoCD deploys from here)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add k8s/kustomization.yaml
+          git commit -m "Release ${GITHUB_SHA::7}: update image tags"
+          git push

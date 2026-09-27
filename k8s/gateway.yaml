@@ -1,0 +1,27 @@
+# The front door: GKE creates a global external HTTP(S) load balancer for it
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: iris-gateway
+  namespace: iris
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+# Everything arriving at the gateway goes to the frontend.
+# The backend is not listed: it cannot be reached from outside.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: iris-route
+  namespace: iris
+spec:
+  parentRefs:
+    - name: iris-gateway
+  rules:
+    - backendRefs:
+        - name: iris-frontend
+          port: 80
