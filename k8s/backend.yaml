@@ -21,6 +21,10 @@ spec:
   template:
     metadata:
       labels: { app: iris-backend }
+      annotations: # picked up by Prometheus' kubernetes-pods scrape job
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: /metrics
     spec:
       serviceAccountName: iris-backend
       automountServiceAccountToken: false

@@ -38,3 +38,22 @@ spec:
             matchLabels: { app: iris-frontend }
       ports:
         - { port: 8080, protocol: TCP }
+---
+# 4. Prometheus (namespace monitoring) scrapes the backend's /metrics on 8080
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-from-prometheus
+  namespace: iris
+spec:
+  podSelector:
+    matchLabels: { app: iris-backend }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: # same list item = AND: this pod in this namespace
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: prometheus, app.kubernetes.io/component: server }
+      ports:
+        - { port: 8080, protocol: TCP }
