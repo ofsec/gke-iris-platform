@@ -1,0 +1,13 @@
+# Dashboards as ConfigMaps: the Grafana sidecar loads every ConfigMap labelled grafana_dashboard=1.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+configMapGenerator:
+- name: iris-dashboard
+  files:
+  - iris.json
+  options:
+    disableNameSuffixHash: true # stable name; the sidecar reloads on content change
+    labels:
+      grafana_dashboard: "1"

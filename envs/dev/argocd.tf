@@ -96,6 +96,11 @@ resource "helm_release" "iris_app" {
             repoURL        = "https://github.com/ofsec/gke-iris-platform.git"
             targetRevision = "main"
             ref            = "values"
+          },
+          {
+            repoURL        = "https://github.com/ofsec/gke-iris-platform.git"
+            targetRevision = "main"
+            path           = "monitoring/dashboards" # dashboard ConfigMaps (kustomize)
           }
         ]
         destination = {
