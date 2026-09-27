@@ -12,3 +12,5 @@ tfplan
 crash.log
 
 zap/
+__pycache__/
+
