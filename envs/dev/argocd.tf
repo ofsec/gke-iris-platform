@@ -56,6 +56,57 @@ resource "helm_release" "iris_app" {
           }
         }
       }
+      # Monitoring: upstream Helm chart + our values file from Git (multi-source)
+      prometheus = {
+        namespace = "argocd"
+        project   = "default"
+        sources = [
+          {
+            repoURL        = "https://prometheus-community.github.io/helm-charts"
+            chart          = "prometheus"
+            targetRevision = "29.34.0"
+            helm           = { valueFiles = ["$values/monitoring/prometheus-values.yaml"] }
+          },
+          {
+            repoURL        = "https://github.com/ofsec/gke-iris-platform.git"
+            targetRevision = "main"
+            ref            = "values" # makes this repo available as $values
+          }
+        ]
+        destination = {
+          server    = "https://kubernetes.default.svc"
+          namespace = "monitoring"
+        }
+        syncPolicy = {
+          automated   = { prune = true, selfHeal = true }
+          syncOptions = ["CreateNamespace=true"]
+        }
+      }
+      grafana = {
+        namespace = "argocd"
+        project   = "default"
+        sources = [
+          {
+            repoURL        = "https://grafana-community.github.io/helm-charts"
+            chart          = "grafana"
+            targetRevision = "13.2.6"
+            helm           = { valueFiles = ["$values/monitoring/grafana-values.yaml"] }
+          },
+          {
+            repoURL        = "https://github.com/ofsec/gke-iris-platform.git"
+            targetRevision = "main"
+            ref            = "values"
+          }
+        ]
+        destination = {
+          server    = "https://kubernetes.default.svc"
+          namespace = "monitoring"
+        }
+        syncPolicy = {
+          automated   = { prune = true, selfHeal = true }
+          syncOptions = ["CreateNamespace=true"]
+        }
+      }
     }
   })]
 

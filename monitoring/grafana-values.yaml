@@ -1,0 +1,30 @@
+# Grafana (chart grafana-community/grafana; grafana/grafana is deprecated), deployed by ArgoCD app "grafana".
+# Access: kubectl -n monitoring port-forward svc/grafana 3000:80 (no public exposure).
+
+# Admin password lives in a Secret created once by hand, never in Git.
+# (A chart-generated random password would be re-rendered by ArgoCD on every sync.)
+admin:
+  existingSecret: grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+
+persistence:
+  enabled: false # datasources and dashboards are provisioned from Git
+
+resources:
+  requests: { cpu: 50m, memory: 128Mi }
+  limits: { memory: 256Mi }
+
+testFramework:
+  enabled: false # extra test pod not needed
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        access: proxy
+        isDefault: true
