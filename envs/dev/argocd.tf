@@ -20,10 +20,24 @@ resource "helm_release" "argocd" {
   create_namespace = true
   timeout          = 900 # Autopilot may need to add nodes first
 
+  # Explicit requests: on Autopilot a container without them gets 500m / 2Gi, and requests are what we pay.
+  # Sized from measured peaks (cAdvisor, Grafana saturation panels) plus headroom.
   values = [yamlencode({
     dex            = { enabled = false } # no single sign-on for this lab
     notifications  = { enabled = false }
-    applicationSet = { enabled = false }
+    applicationSet = { replicas = 0 } # chart 10.x has no "enabled" key for it
+    controller = {                    # peak ~60m / 220Mi; grows with the number of apps
+      resources = { requests = { cpu = "100m", memory = "384Mi" }, limits = { memory = "768Mi" } }
+    }
+    repoServer = { # renders Helm/kustomize: bursty
+      resources = { requests = { cpu = "50m", memory = "128Mi" }, limits = { memory = "512Mi" } }
+    }
+    server = {
+      resources = { requests = { cpu = "25m", memory = "64Mi" }, limits = { memory = "256Mi" } }
+    }
+    redis = {
+      resources = { requests = { cpu = "10m", memory = "32Mi" }, limits = { memory = "128Mi" } }
+    }
   })]
 }
 

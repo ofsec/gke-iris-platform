@@ -11,9 +11,9 @@ admin:
 persistence:
   enabled: false # datasources and dashboards are provisioned from Git
 
-resources:
-  requests: { cpu: 50m, memory: 128Mi }
-  limits: { memory: 256Mi }
+resources: # measured peak ~255Mi: it was sitting at its old 256Mi limit
+  requests: { cpu: 50m, memory: 256Mi }
+  limits: { memory: 512Mi }
 
 testFramework:
   enabled: false # extra test pod not needed

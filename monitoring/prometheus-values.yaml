@@ -9,6 +9,13 @@ prometheus-node-exporter:
 prometheus-pushgateway:
   enabled: false
 
+# The reload sidecar had no requests, so Autopilot gave it 500m / 2Gi (it uses ~0.3m / 8Mi)
+configmapReload:
+  prometheus:
+    resources:
+      requests: { cpu: 10m, memory: 32Mi }
+      limits: { memory: 64Mi }
+
 server:
   retention: "2d" # lab: short history, small disk
   persistentVolume:
