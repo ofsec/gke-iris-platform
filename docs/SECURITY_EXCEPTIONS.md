@@ -20,6 +20,7 @@ so it is reviewed in the same pull request as the code.
 | --- | --- | --- |
 | CKV_GCP_69 | GKE cluster | Autopilot always runs the GKE metadata server. |
 | CKV_GCP_12 | GKE cluster | Autopilot always enforces NetworkPolicy (Dataplane V2). |
+| CKV_GCP_125 | GitHub federation | The condition pins GitHub's immutable `sub` format, which includes the owner and repository IDs. Checkov's parser predates that format and rejects the `@` in it. |
 | CKV_DOCKER_2 | Dockerfiles | Kubernetes probes check health; Docker's HEALTHCHECK is ignored by Kubernetes. |
 
 ## Planned

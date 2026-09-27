@@ -5,6 +5,7 @@ resource "google_iam_workload_identity_pool" "github" {
 }
 
 resource "google_iam_workload_identity_pool_provider" "github" {
+  # checkov:skip=CKV_GCP_125:Condition pins GitHub's immutable sub format (owner and repo IDs); Checkov's parser predates it and rejects the '@'
   workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-actions"
   display_name                       = "GitHub Actions OIDC"
@@ -23,7 +24,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
   # Hard filter: the repository name AND the owner's numeric ID must match.
   # Names can be renamed or re-registered by someone else; the numeric ID cannot.
-  attribute_condition = "(assertion.sub == 'repo:ofsec/gke-iris-platform:ref:refs/heads/main' || assertion.sub == 'repo:ofsec/gke-iris-platform:pull_request') && assertion.repository_owner_id == '129588801'"
+  attribute_condition = "(assertion.sub == 'repo:ofsec@129588801/gke-iris-platform@1390853644:ref:refs/heads/main' || assertion.sub == 'repo:ofsec@129588801/gke-iris-platform@1390853644:pull_request') && assertion.repository_owner_id == '129588801'"
 }
 
 # Workflows from our repository may act as the CI service account
