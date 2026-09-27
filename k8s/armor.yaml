@@ -1,0 +1,29 @@
+
+# Attaches the Cloud Armor policy (created by Terraform) to the frontend Service.
+
+# GKE then applies it on the load balancer's backend for this Service.
+
+apiVersion: networking.gke.io/v1
+
+kind: GCPBackendPolicy
+
+metadata:
+
+  name: iris-frontend-armor
+
+  namespace: iris
+
+spec:
+
+  default:
+
+    securityPolicy: iris-dev-edge
+
+  targetRef:
+
+    group: ""
+
+    kind: Service
+
+    name: iris-frontend
+
