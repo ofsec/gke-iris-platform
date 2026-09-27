@@ -1,3 +1,5 @@
+# checkov:skip=CKV_DOCKER_2:Kubernetes probes check health; Docker's HEALTHCHECK is ignored there
+
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1

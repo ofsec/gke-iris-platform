@@ -25,6 +25,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Build images, tagged with the commit ID
+        run: |
+          for app in backend frontend; do
+            docker build -t "$REGISTRY/$app:${GITHUB_SHA}" "apps/$app"
+          done
+
+      # Image scan BEFORE pushing: a vulnerable image never reaches the registry.
+      # Fails on CRITICAL or HIGH vulnerabilities that already have a fix.
+      - name: Trivy scan (backend)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/backend:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Trivy scan (frontend)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/frontend:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
       - name: Authenticate to GCP (keyless)
         uses: google-github-actions/auth@v2
         with:
@@ -33,13 +57,10 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Let Docker push to Artifact Registry
-        run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
-
-      - name: Build and push images, tagged with the commit ID
+      - name: Push images to Artifact Registry
         run: |
+          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
           for app in backend frontend; do
-            docker build -t "$REGISTRY/$app:${GITHUB_SHA}" "apps/$app"
             docker push "$REGISTRY/$app:${GITHUB_SHA}"
           done
 
