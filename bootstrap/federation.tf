@@ -3,9 +3,9 @@ resource "google_iam_workload_identity_pool" "github" {
 
   workload_identity_pool_id = "github"
 
-  display_name              = "GitHub Actions"
+  display_name = "GitHub Actions"
 
-  depends_on                = [google_project_service.apis]
+  depends_on = [google_project_service.apis]
 
 }
 
@@ -13,11 +13,11 @@ resource "google_iam_workload_identity_pool" "github" {
 
 resource "google_iam_workload_identity_pool_provider" "github" {
 
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
+  workload_identity_pool_id = google_iam_workload_identity_pool.github.workload_identity_pool_id
 
   workload_identity_pool_provider_id = "github-actions"
 
-  display_name                       = "GitHub Actions OIDC"
+  display_name = "GitHub Actions OIDC"
 
 
 
@@ -33,11 +33,11 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
   attribute_mapping = {
 
-    "google.subject"       = "assertion.sub"        # unique ID of the workflow run's identity
+    "google.subject" = "assertion.sub" # unique ID of the workflow run's identity
 
     "attribute.repository" = "assertion.repository" # e.g. ofsec/gke-iris-platform
 
-    "attribute.ref"        = "assertion.ref"        # the branch, e.g. refs/heads/main
+    "attribute.ref" = "assertion.ref" # the branch, e.g. refs/heads/main
 
   }
 
@@ -57,9 +57,9 @@ resource "google_service_account_iam_member" "github_acts_as_ci" {
 
   service_account_id = google_service_account.ci.name
 
-  role               = "roles/iam.workloadIdentityUser"
+  role = "roles/iam.workloadIdentityUser"
 
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/ofsec/gke-iris-platform"
+  member = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/ofsec/gke-iris-platform"
 
 }
 

@@ -1,15 +1,15 @@
 
 resource "google_artifact_registry_repository" "images" {
 
-  project       = var.project_id
+  project = var.project_id
 
-  location      = var.region
+  location = var.region
 
   repository_id = "${var.name}-images"
 
-  format        = "DOCKER"
+  format = "DOCKER"
 
-  description   = "Container images for the iris platform"
+  description = "Container images for the iris platform"
 
 }
 

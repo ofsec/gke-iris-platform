@@ -1,9 +1,9 @@
 
 resource "google_container_cluster" "main" {
 
-  project  = var.project_id
+  project = var.project_id
 
-  name     = "${var.name}-gke"
+  name = "${var.name}-gke"
 
   location = var.region # a region, not a zone: Autopilot is always regional
 
@@ -13,7 +13,7 @@ resource "google_container_cluster" "main" {
 
 
 
-  network    = google_compute_network.vpc.id
+  network = google_compute_network.vpc.id
 
   subnetwork = google_compute_subnetwork.main.id
 
@@ -23,7 +23,7 @@ resource "google_container_cluster" "main" {
 
   ip_allocation_policy {
 
-    cluster_secondary_range_name  = "pods"
+    cluster_secondary_range_name = "pods"
 
     services_secondary_range_name = "services"
 
@@ -35,7 +35,7 @@ resource "google_container_cluster" "main" {
 
   private_cluster_config {
 
-    enable_private_nodes    = true
+    enable_private_nodes = true
 
     enable_private_endpoint = false
 
@@ -51,7 +51,7 @@ resource "google_container_cluster" "main" {
 
       service_account = var.node_service_account
 
-      oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+      oauth_scopes = ["https://www.googleapis.com/auth/cloud-platform"]
 
     }
 

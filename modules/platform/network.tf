@@ -1,9 +1,9 @@
 
 resource "google_compute_network" "vpc" {
 
-  project                 = var.project_id
+  project = var.project_id
 
-  name                    = "${var.name}-vpc"
+  name = "${var.name}-vpc"
 
   auto_create_subnetworks = false # no default subnet in every region: we define our own
 
@@ -13,15 +13,15 @@ resource "google_compute_network" "vpc" {
 
 resource "google_compute_subnetwork" "main" {
 
-  project                  = var.project_id
+  project = var.project_id
 
-  name                     = "${var.name}-subnet"
+  name = "${var.name}-subnet"
 
-  region                   = var.region
+  region = var.region
 
-  network                  = google_compute_network.vpc.id
+  network = google_compute_network.vpc.id
 
-  ip_cidr_range            = var.nodes_cidr
+  ip_cidr_range = var.nodes_cidr
 
   private_ip_google_access = true # private nodes can still reach Google APIs (Artifact Registry, GCS)
 
@@ -29,7 +29,7 @@ resource "google_compute_subnetwork" "main" {
 
   secondary_ip_range {
 
-    range_name    = "pods"
+    range_name = "pods"
 
     ip_cidr_range = var.pods_cidr
 
@@ -37,7 +37,7 @@ resource "google_compute_subnetwork" "main" {
 
   secondary_ip_range {
 
-    range_name    = "services"
+    range_name = "services"
 
     ip_cidr_range = var.services_cidr
 
@@ -53,9 +53,9 @@ resource "google_compute_router" "main" {
 
   project = var.project_id
 
-  name    = "${var.name}-router"
+  name = "${var.name}-router"
 
-  region  = var.region
+  region = var.region
 
   network = google_compute_network.vpc.id
 
@@ -67,15 +67,15 @@ resource "google_compute_router" "main" {
 
 resource "google_compute_router_nat" "main" {
 
-  project                            = var.project_id
+  project = var.project_id
 
-  name                               = "${var.name}-nat"
+  name = "${var.name}-nat"
 
-  router                             = google_compute_router.main.name
+  router = google_compute_router.main.name
 
-  region                             = var.region
+  region = var.region
 
-  nat_ip_allocate_option             = "AUTO_ONLY"
+  nat_ip_allocate_option = "AUTO_ONLY"
 
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
 
@@ -83,7 +83,7 @@ resource "google_compute_router_nat" "main" {
 
   subnetwork {
 
-    name                    = google_compute_subnetwork.main.id
+    name = google_compute_subnetwork.main.id
 
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"] # nodes and pods
 
