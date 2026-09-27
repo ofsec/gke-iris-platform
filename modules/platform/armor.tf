@@ -15,7 +15,6 @@ locals {
     1001 = { name = "xss", expr = "evaluatePreconfiguredWaf('xss-v33-stable', {'sensitivity': 1})" }
     1002 = { name = "lfi", expr = "evaluatePreconfiguredWaf('lfi-v33-stable', {'sensitivity': 1})" }
     1003 = { name = "rce", expr = "evaluatePreconfiguredWaf('rce-v33-stable', {'sensitivity': 1})" }
-    1004 = { name = "log4j", expr = "evaluatePreconfiguredWaf('cve-canary', {'sensitivity': 1})" }
   }
 }
 
@@ -43,6 +42,20 @@ resource "google_compute_security_policy" "edge" {
         }
       }
     }
+  }
+
+  # Log4Shell (CVE-2021-44228): enforced now, never previewed. The signature only matches ${jndi:...}, no false positives possible here
+  rule {
+    priority    = 900
+    action      = "deny(403)"
+    preview     = false
+    description = "Log4j CVE-2021-44228"
+    match {
+      expr {
+        expression = "evaluatePreconfiguredWaf('cve-canary')"
+      }
+    }
+
   }
 
   # More than 100 requests a minute from one IP gets a 429: /predict costs CPU
