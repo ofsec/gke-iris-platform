@@ -59,6 +59,10 @@ resource "google_container_cluster" "main" {
 
 
 
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD" # install the Gateway API and GKE gateway classes
+  }
+
   release_channel {
 
     channel = "REGULAR" # automatic upgrades, at a moderate pace
