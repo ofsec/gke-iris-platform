@@ -23,7 +23,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 
   # Hard filter: the repository name AND the owner's numeric ID must match.
   # Names can be renamed or re-registered by someone else; the numeric ID cannot.
-  attribute_condition = "(assertion.sub == \"repo:ofsec/gke-iris-platform:ref:refs/heads/main\" || assertion.sub == \"repo:ofsec/gke-iris-platform:pull_request\") && assertion.repository_owner_id == \"129588801\""
+  attribute_condition = "(assertion.sub == 'repo:ofsec/gke-iris-platform:ref:refs/heads/main' || assertion.sub == 'repo:ofsec/gke-iris-platform:pull_request') && assertion.repository_owner_id == '129588801'"
 }
 
 # Workflows from our repository may act as the CI service account
