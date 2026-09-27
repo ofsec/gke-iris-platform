@@ -1,0 +1,3 @@
+10055	FAIL	(CSP: directive with no fallback)
+10063	FAIL	(Permissions-Policy header)
+90004	FAIL	(Cross-Origin-Resource-Policy header)
